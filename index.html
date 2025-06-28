@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanitätsdienst WBG</title>
+    <style>
+        body { font-family: sans-serif; background: #f5f5f7; color: #333; margin: 0; }
+        .container { max-width: 500px; margin: 50px auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        input, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 10px; border: 1px solid #ccc; }
+        button { background-color: #007aff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0051a8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login Sanitätsdienst</h1>
+        <input type="text" id="username" placeholder="Benutzername">
+        <input type="password" id="password" placeholder="Passwort">
+        <button onclick="login()">Anmelden</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password})
+            })
+            .then(res => {
+                if (res.ok) {
+                    window.location = '/dashboard.html';
+                } else {
+                    document.getElementById('message').innerText = 'Login fehlgeschlagen';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

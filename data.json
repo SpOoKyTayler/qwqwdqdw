@@ -1,0 +1,7 @@
+{
+  "users": [
+    { "username": "max", "password": "geheim" },
+    { "username": "anna", "password": "passwort" }
+  ],
+  "dienste": []
+}

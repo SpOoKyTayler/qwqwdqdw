@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Sanitätsdienst</title>
+    <style>
+        body { font-family: sans-serif; background: #f5f5f7; color: #333; margin: 0; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        input, button, select { width: 100%; padding: 10px; margin: 5px 0; border-radius: 10px; border: 1px solid #ccc; }
+        button { background-color: #007aff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0051a8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border-bottom: 1px solid #ccc; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard Sanitätsdienst</h1>
+        <h3>In Dienst eintragen</h3>
+        <input type="text" id="username" placeholder="Dein Name">
+        <input type="date" id="date">
+        <select id="shift">
+            <option value="Vormittag">Vormittag</option>
+            <option value="Nachmittag">Nachmittag</option>
+        </select>
+        <button onclick="addDienst()">Dienst hinzufügen</button>
+
+        <h3>Dienstplan</h3>
+        <table>
+            <thead>
+                <tr><th>Name</th><th>Datum</th><th>Schicht</th><th>Status</th><th>Aktion</th></tr>
+            </thead>
+            <tbody id="dienstTable"></tbody>
+        </table>
+    </div>
+
+    <script>
+        function loadDienste() {
+            fetch('/api/dienste').then(res => res.json()).then(data => {
+                const table = document.getElementById('dienstTable');
+                table.innerHTML = '';
+                data.forEach(d => {
+                    let aktion = '';
+                    if (d.status === 'confirmed') {
+                        aktion = `<button onclick="krankmelden(${d.id})">Krankmelden</button>`;
+                    } else if (d.status === 'sick') {
+                        aktion = `<button onclick="vertretung(${d.id})">Als Vertretung eintragen</button>`;
+                    }
+                    table.innerHTML += `<tr><td>${d.username}</td><td>${d.date}</td><td>${d.shift}</td><td>${d.status}${d.vertretung ? ' (Vertretung: '+d.vertretung+')' : ''}</td><td>${aktion}</td></tr>`;
+                });
+            });
+        }
+
+        function addDienst() {
+            const username = document.getElementById('username').value;
+            const date = document.getElementById('date').value;
+            const shift = document.getElementById('shift').value;
+            fetch('/api/dienste', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, date, shift})
+            }).then(() => loadDienste());
+        }
+
+        function krankmelden(id) {
+            fetch('/api/krankmelden', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dienstId: id})
+            }).then(() => loadDienste());
+        }
+
+        function vertretung(id) {
+            const username = prompt('Dein Name als Vertretung');
+            fetch('/api/vertretung', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dienstId: id, username})
+            }).then(() => loadDienste());
+        }
+
+        loadDienste();
+    </script>
+</body>
+</html>
