@@ -1,24 +1,31 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.static('../frontend'));
+
+// Statische Dateien aus public-Ordner bereitstellen
+app.use(express.static(path.join(__dirname, 'public')));
 
 const DATA_FILE = './data.json';
 
+// Hilfsfunktionen für Daten laden/speichern
 function loadData() {
     if (!fs.existsSync(DATA_FILE)) return { users: [], dienste: [] };
     const raw = fs.readFileSync(DATA_FILE);
     return JSON.parse(raw);
 }
+
 function saveData(data) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
+// API-Routen
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const data = loadData();
@@ -78,15 +85,10 @@ app.post('/api/vertretung', (req, res) => {
     }
 });
 
-const path = require('path');
-
-// Statische Dateien ausliefern
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// Fallback für alle nicht-API-Routen → index.html ausliefern
+// Fallback → index.html für alle unbekannten Routen (außer API)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-
+// Server starten
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
