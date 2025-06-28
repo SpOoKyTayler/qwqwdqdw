@@ -78,4 +78,15 @@ app.post('/api/vertretung', (req, res) => {
     }
 });
 
+const path = require('path');
+
+// Statische Dateien ausliefern
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Fallback für alle nicht-API-Routen → index.html ausliefern
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
+
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
